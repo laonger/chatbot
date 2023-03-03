@@ -1,13 +1,16 @@
 
-use std::fmt::format;
-use std::error;
-use std::result;
+use std::{
+    fmt::format,
+    error,
+    result,
+    env,
+};
 
 use hyper::{body::Buf, header, Body, Client, Request};
 use hyper_tls::HttpsConnector;
 use serde_derive::{Deserialize, Serialize};
 
-const API_KEY:&str = "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";
+//const API_KEY:&str = "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";
 
 #[derive(Deserialize, Debug)]
 struct OpenAIChoices {
@@ -38,17 +41,29 @@ pub async fn get(prompt: String) -> Result<String> {
     let client = Client::builder().build(https);
     let uri = "https://api.openai.com/v1/completions";
 
-    let model = String::from("text-davinci-003");
+    //let model = String::from("text-davinci-003");
+    let model = String::from("gpt-3.5-turbo");
     let stop = String::from("Text");
 
     let prompt = format!("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. {prompt}\nAI:");
 
-    let auth_header_val = format!("Bearer {}", API_KEY);
+    let mut api_key = String::new();
+
+    match env::var("OPENAI_API_KEY") {
+        Ok(x) => {
+            api_key = x;
+        },
+        Err(e) => {
+            println!("Need OPENAI_API_KEY");
+            return Ok("".to_string());
+        }
+    };
+    let auth_header_val = format!("Bearer {}", api_key);
 
     let openai_request = OpenAIRequest {
         model,
         prompt,
-        max_tokens: 64,
+        max_tokens: 2048,
         stop,
     };
 

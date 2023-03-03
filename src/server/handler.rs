@@ -26,16 +26,19 @@ pub async fn handle_connection(
     //println!("connect in 5");
     //let content = contents_list.join("\n");
 
-    let mut content:String = String::new();
+    let mut content = String::new();
+    let mut reader = BufReader::new(stream.try_clone()?);
     if let Some(c) = client {
         loop {
-            match stream.read_to_string(&mut content) {
+            let mut content_buf:Vec<u8> = Vec::new();
+            match reader.read_until(b'', &mut content_buf) {
                 Ok(r) => {
-                    println!("content in 6, {:?}", content);
-                    if r == 0 {
+                    if r == 0{
                         break
                     }
-                    if content.ends_with("\n\n"){
+                    content = String::from_utf8(content_buf)?;
+                    println!("content in 6, {:?}", content);
+                    if content.ends_with(""){
                         let _content = content.clone();
                         content = String::new();
                         if commands::run_command(c, &_content) {
@@ -43,10 +46,12 @@ pub async fn handle_connection(
                             c.add_content(cache::Role::Human, _content);
                             let prompt = c.migrate_content();
                             match openai::get(prompt).await {
-                                Ok(res) => {
+                                Ok(mut res) => {
+                                    res.push('');
                                     c.add_content(cache::Role::Robot, res.clone());
                                     println!("res::{res}");
-                                    stream.write(res.as_bytes());
+                                    stream.write_all(res.as_bytes());
+                                    stream.flush();
                                 },
                                 Err(e) => {
                                 }
