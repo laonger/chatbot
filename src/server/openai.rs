@@ -10,7 +10,6 @@ use hyper::{body::Buf, header, Body, Client, Request};
 use hyper_tls::HttpsConnector;
 use serde_derive::{Deserialize, Serialize};
 
-//const API_KEY:&str = "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";
 
 #[derive(Deserialize, Debug)]
 struct OpenAIChoices {
