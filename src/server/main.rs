@@ -7,7 +7,7 @@ mod openai;
 
 #[tokio::main]
 async fn main() -> openai::Result<()>{
-    let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:7878")?;
 
     let mut client_list = cache::Clients::new();
 
@@ -16,11 +16,12 @@ async fn main() -> openai::Result<()>{
         match stream {
             Ok(stream) => {
                 println!("connect in 2");
-                let address = stream.peer_addr().unwrap().to_string();
+                let address = stream.peer_addr()?.to_string();
                 client_list.add_client(address);
                 handler::handle_connection(&mut client_list, stream).await?;
             },
             Err(e) => {
+                println!("sream error: {:?}", e);
             }
         }
     }

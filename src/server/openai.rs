@@ -34,7 +34,6 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + S
 
 pub async fn get(prompt: String) -> Result<String> {
 
-    println!("Prompt: {prompt}");
     
     let https = HttpsConnector::new();
     let client = Client::builder().build(https);
@@ -68,11 +67,12 @@ pub async fn get(prompt: String) -> Result<String> {
 
     let body = Body::from(serde_json::to_vec(&openai_request)?);
 
+    println!("openai request: {body:?}");
+
     let req = Request::post(uri)
         .header(header::CONTENT_TYPE, "application/json")
         .header("Authorization", &auth_header_val)
-        .body(body)
-        .unwrap();
+        .body(body)?;
 
     let res = client.request(req).await?;
 
