@@ -41,7 +41,7 @@ pub async fn get(prompt: String) -> Result<String> {
 
     let model = String::from("text-davinci-003");
     //let model = String::from("gpt-3.5-turbo");
-    let stop = String::from("Text");
+    let stop = String::from("\n");
 
     let prompt = format!("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. {prompt}\nAI:");
 
