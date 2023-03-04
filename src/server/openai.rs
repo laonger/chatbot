@@ -39,8 +39,8 @@ pub async fn get(prompt: String) -> Result<String> {
     let client = Client::builder().build(https);
     let uri = "https://api.openai.com/v1/completions";
 
-    //let model = String::from("text-davinci-003");
-    let model = String::from("gpt-3.5-turbo");
+    let model = String::from("text-davinci-003");
+    //let model = String::from("gpt-3.5-turbo");
     let stop = String::from("Text");
 
     let prompt = format!("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. {prompt}\nAI:");
@@ -61,7 +61,7 @@ pub async fn get(prompt: String) -> Result<String> {
     let openai_request = OpenAIRequest {
         model,
         prompt,
-        max_tokens: 2048,
+        max_tokens: 1024,
         stop,
     };
 
@@ -69,7 +69,7 @@ pub async fn get(prompt: String) -> Result<String> {
 
     println!("openai request: {body:?}");
 
-    let req = Request::post(uri)
+    let req = Request::get(uri)
         .header(header::CONTENT_TYPE, "application/json")
         .header("Authorization", &auth_header_val)
         .body(body)?;
