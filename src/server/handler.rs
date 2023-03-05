@@ -36,28 +36,28 @@ pub async fn handle_connection(
                     if r == 0{
                         break
                     }
-                    content = String::from_utf8(content_buf)?;
+                    content = String::from_utf8(content_buf)?.replace("", "");
                     println!("content in 6, {:?}", content);
-                    if content.ends_with(""){
-                        let _content = content.clone();
-                        content = String::new();
-                        if commands::run_command(c, &_content) {
-                        } else {
-                            c.add_content(cache::Role::Human, _content);
-                            let prompt = c.migrate_content();
-                            match openai::get(prompt).await {
-                                Ok(mut res) => {
-                                    res.push('');
-                                    c.add_content(cache::Role::Robot, res.clone());
-                                    println!("res::{res}");
-                                    stream.write_all(res.as_bytes());
-                                    stream.flush();
-                                },
-                                Err(e) => {
-                                }
-                            };
-
-                        }
+                    let _content = content.clone();
+                    content = String::new();
+                    if commands::run_command(c, &_content) {
+                    } else {
+                        c.add_content(cache::ContentUnit::Human(_content));
+                        let prompt = c.migrate_content();
+                        match openai::get(prompt).await {
+                            Ok(mut res) => {
+                                res.push('');
+                                c.add_content(
+                                    cache::ContentUnit::Robot(res.clone())
+                                    );
+                                println!("res::{res}");
+                                stream.write_all(res.as_bytes());
+                                stream.flush();
+                            },
+                            Err(e) => {
+                                println!("{:?}", e);
+                            }
+                        };
                     }
                 },
                 Err(e) => {

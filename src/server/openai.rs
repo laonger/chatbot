@@ -10,40 +10,54 @@ use hyper::{body::Buf, header, Body, Client, Request};
 use hyper_tls::HttpsConnector;
 use serde_derive::{Deserialize, Serialize};
 
+use crate::cache;
 
-#[derive(Deserialize, Debug)]
-struct OpenAIChoices {
-    text: String,
+
+//#[derive(Deserialize, Debug)]
+//struct OpenAIChoices {
+//    text: String,
+//}
+//
+#[derive(Deserialize, Debug, Clone)]
+struct ResponseMessageUnit {
+    message:cache::ContentUnit,
 }
 
 #[derive(Deserialize, Debug)]
 struct OpenAIResponse {
-    choices: Vec<OpenAIChoices>,
+    choices: Vec<ResponseMessageUnit>,
 }
 
-#[derive(Serialize, Debug)]
+//#[derive(Serialize, Deserialize, Debug)]
+//struct OpenAIMessage {
+//    role: String,
+//    content: String
+//}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct OpenAIRequest {
     model: String,
-    prompt: String,
+    messages: Vec<cache::ContentUnit>,
+    //prompt: String,
     max_tokens: u32,
-    stop: String,
+    //stop: String,
 }
 
 
-pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+pub type Result<T> 
+    = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-pub async fn get(prompt: String) -> Result<String> {
+pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
-    
     let https = HttpsConnector::new();
     let client = Client::builder().build(https);
-    let uri = "https://api.openai.com/v1/completions";
+    let uri = "https://api.openai.com/v1/chat/completions";
 
-    let model = String::from("text-davinci-003");
-    //let model = String::from("gpt-3.5-turbo");
+    //let model = String::from("text-davinci-003");
+    let model = String::from("gpt-3.5-turbo");
     let stop = String::from("\n");
 
-    let prompt = format!("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. {prompt}\nAI:");
+    //let prompt = format!("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. {prompt}\nAI:");
 
     let mut api_key = String::new();
 
@@ -60,16 +74,17 @@ pub async fn get(prompt: String) -> Result<String> {
 
     let openai_request = OpenAIRequest {
         model,
-        prompt,
-        max_tokens: 1024,
-        stop,
+        messages,
+        //prompt,
+        max_tokens: 2048,
+        //stop,
     };
 
     let body = Body::from(serde_json::to_vec(&openai_request)?);
 
     println!("openai request: {body:?}");
 
-    let req = Request::get(uri)
+    let req = Request::post(uri)
         .header(header::CONTENT_TYPE, "application/json")
         .header("Authorization", &auth_header_val)
         .body(body)?;
@@ -85,14 +100,22 @@ pub async fn get(prompt: String) -> Result<String> {
             std::process::exit(1);
         }
     };
-    Ok(
-        json.choices[0]
-            .text
-            .split('\n')
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>()
-            .join("\n")
-    )
+    match json.choices[0].clone() {
+        ResponseMessageUnit{message:cache::ContentUnit::Robot(x)} => {
+            Ok(x)
+        },
+        ResponseMessageUnit{message:cache::ContentUnit::Human(x)} => {
+            Ok(format!("Human: {}", x))
+        }
+    }
+    //Ok(
+    //    json.message[0]
+    //        .text
+    //        .split('\n')
+    //        .map(|s| s.trim())
+    //        .filter(|s| !s.is_empty())
+    //        .collect::<Vec<_>>()
+    //        .join("\n")
+    //)
 
 }

@@ -1,23 +1,20 @@
 use std::collections::HashMap;
-use std::convert::AsMut;
+
+use serde_derive::{Deserialize, Serialize};
 
 
-enum Type {
-    text,
-    command
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(tag="role", content="content")]
+pub enum ContentUnit {
+    Robot(String),
+    Human(String)
 }
 
-#[derive(Debug)]
-pub enum Role {
-    Robot,
-    Human
-}
-
-#[derive(Debug)]
-pub struct ContentUnit {
-    role: Role,
-    content: String,
-}
+//#[derive(Debug)]
+//pub struct ContentUnit {
+//    role: Role,
+//    content: String,
+//}
 
 #[derive(Debug)]
 pub struct ClientUnit {
@@ -34,28 +31,30 @@ impl ClientUnit {
         }
     }
 
-    pub fn add_content(&mut self, role: Role, content: String) {
-        self.contents.push(ContentUnit{
-            role,
-            content
-        })
+    pub fn add_content(&mut self, content:ContentUnit) {
+        self.contents.push(content)
     }
 
-    pub fn migrate_content(&self) -> String {
-        let mut s:Vec<String> = Vec::new();
-        for i in &(self.contents) {
-            let mut _s:String = match i.role {
-                Role::Robot => {
-                    "AI: ".to_string()
-                },
-                Role::Human => {
-                    "Human: ".to_string()
-                }
-            };
-            _s.push_str(i.content.clone().as_str());
-            s.push(_s);
-        }
-        s.join("\n")
+    // TODO 
+    //pub fn migrate_content(&self) -> String {
+    //    let mut s:Vec<String> = Vec::new();
+    //    for i in &(self.contents) {
+    //        let mut _s:String = match i.role {
+    //            Role::Robot => {
+    //                "AI: ".to_string()
+    //            },
+    //            Role::Human => {
+    //                "Human: ".to_string()
+    //            }
+    //        };
+    //        _s.push_str(i.content.clone().as_str());
+    //        s.push(_s);
+    //    }
+    //    s.join("\n")
+    //}
+    
+    pub fn migrate_content(&self) -> Vec<ContentUnit> {
+        return self.contents.clone()
     }
 
     pub fn clear_content(&mut self) {
@@ -87,7 +86,6 @@ impl  Clients {
 
     }
 
-
 }
 
 #[cfg(test)]
@@ -97,8 +95,11 @@ mod tests {
     #[test]
     fn client_unit_migrate_content_test() {
         let mut cu = ClientUnit::new("".to_string());
-        cu.add_content(Role::Human, "hihihi".to_string());
-        cu.add_content(Role::Robot, "hi".to_string());
-        assert_eq!(cu.migrate_content(), "Human: hihihi\nAI: hi".to_string());
+        cu.add_content(ContentUnit::Human("hihihi".to_string()));
+        cu.add_content(ContentUnit::Robot("hi".to_string()));
+        assert_eq!(cu.migrate_content(), vec![
+            ContentUnit::Human("hihihi".to_string()),
+            ContentUnit::Robot("hi".to_string())
+        ]);
     }
 }
