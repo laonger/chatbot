@@ -66,6 +66,9 @@ pub async fn handle_connection(
                                     cache::ContentUnit::assistant(res.clone())
                                     );
                                 println!("res::{res}");
+                                res = vec![
+                                    room_id, "--$$__".to_string(), res
+                                ].join("");
                                 stream.write_all(res.as_bytes());
                                 stream.flush();
                             },
