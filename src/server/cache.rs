@@ -40,13 +40,19 @@ impl ClientUnit {
     pub fn add_content(&mut self, room_id: &String, content:ContentUnit) {
         match self.contents.get_mut(room_id) {
             Some(c) => {
-                c.push(content)
+                c.push(content);
+                if c.len() >=10 {
+                    for _ in 0..6 {
+                        c.remove(0);
+                    }
+                }
             },
             None => {
                 let c_l = vec![content];
                 self.contents.insert(room_id.clone(), c_l);
             }
         }
+
     }
 
     // TODO 
@@ -129,5 +135,18 @@ mod tests {
             ContentUnit::user("hihihi".to_string()),
             ContentUnit::assistant("hi".to_string())
         ]);
+    }
+
+    #[test]
+    fn add_content_max_test() {
+        let mut cu = ClientUnit::new("".to_string());
+        let room_id = "1".to_string();
+        for i in 0..30 {
+            cu.add_content(&room_id, ContentUnit::user("hihihi".to_string()));
+        }
+        assert!(
+            cu.migrate_content(&room_id).len()<10
+        );
+        
     }
 }

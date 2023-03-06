@@ -51,7 +51,6 @@ pub async fn handle_connection(
                     }
 
 
-                    println!("content in 6, {:?}", content);
                     //let _content = content.clone();
                     //content = String::new();
                     if commands::run_command(c, &room_id, &content) {
@@ -65,7 +64,6 @@ pub async fn handle_connection(
                                     &room_id,
                                     cache::ContentUnit::assistant(res.clone())
                                     );
-                                println!("res::{res}");
                                 res = vec![
                                     room_id, "--$$__".to_string(), res
                                 ].join("");
