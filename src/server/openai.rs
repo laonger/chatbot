@@ -98,8 +98,8 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
     let json: OpenAIResponse = match serde_json::from_reader(body.reader()) {
         Ok(response) => response,
-        Err(_) => {
-            println!("Error calling OpenAI. Check environment variable OPENAI_KEY");
+        Err(e) => {
+            println!("Error: {:?}", e);
             std::process::exit(1);
         }
     };
