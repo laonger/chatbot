@@ -39,7 +39,7 @@ struct OpenAIRequest {
     model: String,
     messages: Vec<cache::ContentUnit>,
     //prompt: String,
-    max_tokens: u32,
+    //max_tokens: u32,
     //stop: String,
 }
 
@@ -76,18 +76,20 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         model,
         messages,
         //prompt,
-        max_tokens: 2048,
+        //max_tokens: 2048,
         //stop,
     };
 
     let body = Body::from(serde_json::to_vec(&openai_request)?);
 
-    println!("openai request: {body:?}");
+    println!("openai request body: {body:?}");
 
     let req = Request::post(uri)
         .header(header::CONTENT_TYPE, "application/json")
         .header("Authorization", &auth_header_val)
         .body(body)?;
+
+    println!("openai request: {req:?}");
 
     let res = client.request(req).await?;
 
