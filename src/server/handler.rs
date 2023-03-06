@@ -26,28 +26,43 @@ pub async fn handle_connection(
     //println!("connect in 5");
     //let content = contents_list.join("\n");
 
-    let mut content = String::new();
     let mut reader = BufReader::new(stream.try_clone()?);
     if let Some(c) = client {
         loop {
+            let mut content = String::new();
+            let mut room_id = String::new();
             let mut content_buf:Vec<u8> = Vec::new();
             match reader.read_until(b'', &mut content_buf) {
                 Ok(r) => {
                     if r == 0{
+                        //client_list.remove_client(&c);
                         break
                     }
-                    content = String::from_utf8(content_buf)?.replace("", "");
+                    match String::from_utf8(content_buf)?
+                        .replace("", "")
+                        .split_once( "--$$__") {
+                            Some((x, y)) => {
+                                room_id = x.to_string();
+                                content = y.to_string();
+                            },
+                            None => {
+                                println!("need room_id");
+                            }
+                    }
+
+
                     println!("content in 6, {:?}", content);
-                    let _content = content.clone();
-                    content = String::new();
-                    if commands::run_command(c, &_content) {
+                    //let _content = content.clone();
+                    //content = String::new();
+                    if commands::run_command(c, &room_id, &content) {
                     } else {
-                        c.add_content(cache::ContentUnit::Human(_content));
-                        let prompt = c.migrate_content();
-                        match openai::get(prompt).await {
+                        c.add_content(&room_id, cache::ContentUnit::Human(content));
+                        let messages = c.migrate_content(&room_id);
+                        match openai::get(messages).await {
                             Ok(mut res) => {
                                 res.push('');
                                 c.add_content(
+                                    &room_id,
                                     cache::ContentUnit::Robot(res.clone())
                                     );
                                 println!("res::{res}");

@@ -12,10 +12,12 @@ use std::{
 use crate::cache;
 
 
-fn execute(client: &mut cache::ClientUnit, cmd: &str) -> Result<(), Error> {
+fn execute(
+    client: &mut cache::ClientUnit, room_id: &String, cmd: &str
+) -> Result<(), Error> {
     match cmd {
         "/new" => {
-            client.clear_content();
+            client.clear_content(room_id);
         },
         _ => {
             return Ok(());
@@ -24,10 +26,12 @@ fn execute(client: &mut cache::ClientUnit, cmd: &str) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn run_command(client: &mut cache::ClientUnit, s: &String) -> bool{
+pub fn run_command(
+    client: &mut cache::ClientUnit, room_id: &String, s: &String
+) -> bool{
     let s = s.trim();
     if s.starts_with("/") {
-        execute(client, s);
+        execute(client, room_id, s);
         true
     } else {
         false

@@ -7,7 +7,8 @@ use serde_derive::{Deserialize, Serialize};
 #[serde(tag="role", content="content")]
 pub enum ContentUnit {
     Robot(String),
-    Human(String)
+    Human(String),
+    System(String),
 }
 
 //#[derive(Debug)]
@@ -16,10 +17,10 @@ pub enum ContentUnit {
 //    content: String,
 //}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ClientUnit {
     addr: String,
-    contents: Vec<ContentUnit>,
+    contents: HashMap<String, Vec<ContentUnit>>,
 }
 
 
@@ -27,12 +28,25 @@ impl ClientUnit {
     pub fn new(addr:String) -> Self {
         Self { 
             addr,
-            contents: Vec::new()
+            contents: HashMap::new()
         }
     }
 
-    pub fn add_content(&mut self, content:ContentUnit) {
-        self.contents.push(content)
+    //pub fn init_content(&self) {
+    //    let prompt = ("The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ");
+    //    
+    //}
+
+    pub fn add_content(&mut self, room_id: &String, content:ContentUnit) {
+        match self.contents.get_mut(room_id) {
+            Some(c) => {
+                c.push(content)
+            },
+            None => {
+                let c_l = vec![content];
+                self.contents.insert(room_id.clone(), c_l);
+            }
+        }
     }
 
     // TODO 
@@ -53,12 +67,22 @@ impl ClientUnit {
     //    s.join("\n")
     //}
     
-    pub fn migrate_content(&self) -> Vec<ContentUnit> {
-        return self.contents.clone()
+    pub fn migrate_content(&mut self, room_id: &String) -> Vec<ContentUnit> {
+        match self.contents.get(room_id).as_mut() {
+            Some(&mut x) => {
+                return x.clone()
+            },
+            None => {
+                let content = ContentUnit::System(
+                    "The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ".to_string());
+                self.add_content(room_id, content.clone());
+                vec![content]
+            }
+        }
     }
 
-    pub fn clear_content(&mut self) {
-        self.contents = Vec::new();
+    pub fn clear_content(&mut self, room_id:&String) {
+        self.contents.remove(room_id);
     }
 }
 
@@ -86,6 +110,10 @@ impl  Clients {
 
     }
 
+    pub fn remove_client(&mut self, client:&ClientUnit) {
+        self.data.remove(&(client.addr));
+    }
+
 }
 
 #[cfg(test)]
@@ -95,9 +123,9 @@ mod tests {
     #[test]
     fn client_unit_migrate_content_test() {
         let mut cu = ClientUnit::new("".to_string());
-        cu.add_content(ContentUnit::Human("hihihi".to_string()));
-        cu.add_content(ContentUnit::Robot("hi".to_string()));
-        assert_eq!(cu.migrate_content(), vec![
+        cu.add_content(&("1".to_string()), ContentUnit::Human("hihihi".to_string()));
+        cu.add_content(&("1".to_string()), ContentUnit::Robot("hi".to_string()));
+        assert_eq!(cu.migrate_content(&("1".to_string())), vec![
             ContentUnit::Human("hihihi".to_string()),
             ContentUnit::Robot("hi".to_string())
         ]);

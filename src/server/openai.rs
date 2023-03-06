@@ -106,6 +106,9 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         },
         ResponseMessageUnit{message:cache::ContentUnit::Human(x)} => {
             Ok(format!("Human: {}", x))
+        },
+        ResponseMessageUnit{message:cache::ContentUnit::System(x)} => {
+            Ok(format!("System: {}", x))
         }
     }
     //Ok(

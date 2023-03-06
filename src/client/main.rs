@@ -8,7 +8,7 @@ fn main() -> std::io::Result<()> {
     //stream.write(&[1])?;
     //stream.read(&mut [0; 128])?;
     loop {
-        let mut user_input = String::new();
+        let mut user_input = "1--$$__".to_string();
         println!("Human: ");
         stdin().read_line(&mut user_input).expect("");
         //println!("{user_input}");
@@ -21,7 +21,7 @@ fn main() -> std::io::Result<()> {
         let mut res_buf:Vec<u8> = Vec::new();
         match res_reader.read_until(b'', &mut res_buf) {
             Ok(_) => {
-                let content = format!("AI: {}", String::from_utf8(res_buf).unwrap());
+                let content = format!("AI: {}", String::from_utf8(res_buf).unwrap().replace("", ""));
                 for l in content.split("\n"){
                     println!("{l}");
                 }
