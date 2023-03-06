@@ -56,14 +56,14 @@ pub async fn handle_connection(
                     //content = String::new();
                     if commands::run_command(c, &room_id, &content) {
                     } else {
-                        c.add_content(&room_id, cache::ContentUnit::Human(content));
+                        c.add_content(&room_id, cache::ContentUnit::user(content));
                         let messages = c.migrate_content(&room_id);
                         match openai::get(messages).await {
                             Ok(mut res) => {
                                 res.push('');
                                 c.add_content(
                                     &room_id,
-                                    cache::ContentUnit::Robot(res.clone())
+                                    cache::ContentUnit::assistant(res.clone())
                                     );
                                 println!("res::{res}");
                                 stream.write_all(res.as_bytes());

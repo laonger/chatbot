@@ -94,6 +94,7 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
     let res = client.request(req).await?;
 
+    println!("openai response: {res:?}");
     let body = hyper::body::aggregate(res).await?;
 
     let json: OpenAIResponse = match serde_json::from_reader(body.reader()) {
@@ -104,13 +105,13 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         }
     };
     match json.choices[0].clone() {
-        ResponseMessageUnit{message:cache::ContentUnit::Robot(x)} => {
+        ResponseMessageUnit{message:cache::ContentUnit::assistant(x)} => {
             Ok(x)
         },
-        ResponseMessageUnit{message:cache::ContentUnit::Human(x)} => {
+        ResponseMessageUnit{message:cache::ContentUnit::user(x)} => {
             Ok(format!("Human: {}", x))
         },
-        ResponseMessageUnit{message:cache::ContentUnit::System(x)} => {
+        ResponseMessageUnit{message:cache::ContentUnit::system(x)} => {
             Ok(format!("System: {}", x))
         }
     }

@@ -6,9 +6,9 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[serde(tag="role", content="content")]
 pub enum ContentUnit {
-    Robot(String),
-    Human(String),
-    System(String),
+    assistant(String),
+    user(String),
+    system(String),
 }
 
 //#[derive(Debug)]
@@ -73,7 +73,7 @@ impl ClientUnit {
                 return x.clone()
             },
             None => {
-                let content = ContentUnit::System(
+                let content = ContentUnit::system(
                     "The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ".to_string());
                 self.add_content(room_id, content.clone());
                 vec![content]
@@ -123,11 +123,11 @@ mod tests {
     #[test]
     fn client_unit_migrate_content_test() {
         let mut cu = ClientUnit::new("".to_string());
-        cu.add_content(&("1".to_string()), ContentUnit::Human("hihihi".to_string()));
-        cu.add_content(&("1".to_string()), ContentUnit::Robot("hi".to_string()));
+        cu.add_content(&("1".to_string()), ContentUnit::user("hihihi".to_string()));
+        cu.add_content(&("1".to_string()), ContentUnit::assistant("hi".to_string()));
         assert_eq!(cu.migrate_content(&("1".to_string())), vec![
-            ContentUnit::Human("hihihi".to_string()),
-            ContentUnit::Robot("hi".to_string())
+            ContentUnit::user("hihihi".to_string()),
+            ContentUnit::assistant("hi".to_string())
         ]);
     }
 }
