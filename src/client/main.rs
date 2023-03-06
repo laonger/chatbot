@@ -3,7 +3,8 @@ use std::net::TcpStream;
 use std::io::{stdin,stdout,Write, BufReader};
 
 fn main() -> std::io::Result<()> {
-    let mut stream = TcpStream::connect("208.115.245.46:7878")?;
+    //let mut stream = TcpStream::connect("208.115.245.46:7878")?;
+    let mut stream = TcpStream::connect("127.0.0.1:7878")?;
 
     //stream.write(&[1])?;
     //stream.read(&mut [0; 128])?;

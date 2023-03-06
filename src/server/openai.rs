@@ -80,7 +80,8 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         //stop,
     };
 
-    let body = Body::from(serde_json::to_vec(&openai_request)?);
+    //let body = Body::from(serde_json::to_vec(&openai_request)?);
+    let body = Body::from(serde_json::to_string(&openai_request)?);
 
     println!("openai request body: {body:?}");
 
