@@ -39,7 +39,7 @@ struct OpenAIRequest {
     model: String,
     messages: Vec<cache::ContentUnit>,
     //prompt: String,
-    //max_tokens: u32,
+    max_tokens: u32,
     //stop: String,
 }
 
@@ -76,7 +76,7 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         model,
         messages,
         //prompt,
-        //max_tokens: 2048,
+        max_tokens: 4000,
         //stop,
     };
 
