@@ -11,18 +11,11 @@ pub enum ContentUnit {
     system(String),
 }
 
-//#[derive(Debug)]
-//pub struct ContentUnit {
-//    role: Role,
-//    content: String,
-//}
-
 #[derive(Debug, Clone)]
 pub struct ClientUnit {
     addr: String,
     contents: HashMap<String, Vec<ContentUnit>>,
 }
-
 
 impl ClientUnit {
     pub fn new(addr:String) -> Self {
@@ -31,11 +24,6 @@ impl ClientUnit {
             contents: HashMap::new()
         }
     }
-
-    //pub fn init_content(&self) {
-    //    let prompt = ("The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ");
-    //    
-    //}
 
     pub fn add_content(&mut self, room_id: &String, content:ContentUnit) {
         match self.contents.get_mut(room_id) {
@@ -55,24 +43,6 @@ impl ClientUnit {
 
     }
 
-    // TODO 
-    //pub fn migrate_content(&self) -> String {
-    //    let mut s:Vec<String> = Vec::new();
-    //    for i in &(self.contents) {
-    //        let mut _s:String = match i.role {
-    //            Role::Robot => {
-    //                "AI: ".to_string()
-    //            },
-    //            Role::Human => {
-    //                "Human: ".to_string()
-    //            }
-    //        };
-    //        _s.push_str(i.content.clone().as_str());
-    //        s.push(_s);
-    //    }
-    //    s.join("\n")
-    //}
-    
     pub fn migrate_content(&mut self, room_id: &String) -> Vec<ContentUnit> {
         match self.contents.get(room_id).as_mut() {
             Some(&mut x) => {

@@ -6,7 +6,9 @@ use std::{
     env,
 };
 
-use hyper::{body::Buf, header, Body, Client, Request};
+use http::status::StatusCode;
+
+use hyper::{body::Buf, header, Body, Client, Request, Error};
 use hyper_tls::HttpsConnector;
 use serde_derive::{Deserialize, Serialize};
 
@@ -27,6 +29,17 @@ struct ResponseMessageUnit {
 struct OpenAIResponse {
     choices: Vec<ResponseMessageUnit>,
 }
+
+#[derive(Deserialize, Debug, Clone)]
+struct ResponseErrorContent {
+    message:String,
+}
+
+#[derive(Deserialize, Debug)]
+struct OpenAIErrorResponse {
+    error: ResponseErrorContent,
+}
+
 
 //#[derive(Serialize, Deserialize, Debug)]
 //struct OpenAIMessage {
@@ -93,36 +106,33 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
     println!("openai request: {req:?}");
 
     let res = client.request(req).await?;
-
     println!("openai response: {res:?}");
-    let body = hyper::body::aggregate(res).await?;
-
-    let json: OpenAIResponse = match serde_json::from_reader(body.reader()) {
-        Ok(response) => response,
-        Err(e) => {
-            println!("Error: {:?}", e);
-            std::process::exit(1);
-        }
-    };
-    match json.choices[0].clone() {
-        ResponseMessageUnit{message:cache::ContentUnit::assistant(x)} => {
-            Ok(x)
+    match res.status() {
+        StatusCode::OK => {
+            let body = hyper::body::aggregate(res).await?;
+            let json: OpenAIResponse = serde_json::from_reader(body.reader())?;
+            match json.choices[0].clone() {
+                ResponseMessageUnit{message:cache::ContentUnit::assistant(x)} => {
+                    Ok(x)
+                },
+                ResponseMessageUnit{message:cache::ContentUnit::user(x)} => {
+                    Ok(format!("Human: {}", x))
+                },
+                ResponseMessageUnit{message:cache::ContentUnit::system(x)} => {
+                    Ok(format!("System: {}", x))
+                }
+            }
         },
-        ResponseMessageUnit{message:cache::ContentUnit::user(x)} => {
-            Ok(format!("Human: {}", x))
+        StatusCode::BAD_REQUEST => {
+            let body = hyper::body::aggregate(res).await?;
+            let error: OpenAIErrorResponse = serde_json::from_reader(body.reader())?;
+            Ok("".to_string())
         },
-        ResponseMessageUnit{message:cache::ContentUnit::system(x)} => {
-            Ok(format!("System: {}", x))
+        _ => {
+            eprintln!("Error res: {:?}", res);
+            Ok("".to_string())
         }
     }
-    //Ok(
-    //    json.message[0]
-    //        .text
-    //        .split('\n')
-    //        .map(|s| s.trim())
-    //        .filter(|s| !s.is_empty())
-    //        .collect::<Vec<_>>()
-    //        .join("\n")
-    //)
+
 
 }

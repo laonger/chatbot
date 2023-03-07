@@ -18,14 +18,6 @@ pub async fn handle_connection(
 
     let client = client_list.get_client(stream.peer_addr().unwrap().to_string());
 
-    //println!("connect in 4");
-    //let contents_list: Vec<_> = buf_reader
-    //    .lines()
-    //    .map(|result| result.unwrap())
-    //    .collect();
-    //println!("connect in 5");
-    //let content = contents_list.join("\n");
-
     let mut reader = BufReader::new(stream.try_clone()?);
     if let Some(c) = client {
         loop {
@@ -50,9 +42,6 @@ pub async fn handle_connection(
                             }
                     }
 
-
-                    //let _content = content.clone();
-                    //content = String::new();
                     if commands::run_command(c, &room_id, &content) {
                     } else {
                         c.add_content(&room_id, cache::ContentUnit::user(content));
