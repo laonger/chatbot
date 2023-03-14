@@ -86,11 +86,12 @@ impl  Clients {
 
     }
 
-    pub fn remove_client(&mut self, client:&ClientUnit) {
-        self.data.remove(&(client.addr));
+    pub fn remove_client(&mut self, addr:String) {
+        self.data.remove(&addr);
     }
 
 }
+
 
 #[cfg(test)]
 mod tests {

@@ -56,9 +56,10 @@ struct OpenAIRequest {
     //stop: String,
 }
 
+pub type OError = Box<dyn std::error::Error + Send + Sync>;
 
 pub type Result<T> 
-    = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+    = std::result::Result<T, OError>;
 
 pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
@@ -103,10 +104,10 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         .header("Authorization", &auth_header_val)
         .body(body)?;
 
-    println!("openai request: {req:?}");
+    //println!("openai request: {req:?}");
 
     let res = client.request(req).await?;
-    println!("openai response: {res:?}");
+    //println!("openai response: {res:?}");
     match res.status() {
         StatusCode::OK => {
             let body = hyper::body::aggregate(res).await?;
@@ -126,11 +127,13 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
         StatusCode::BAD_REQUEST => {
             let body = hyper::body::aggregate(res).await?;
             let error: OpenAIErrorResponse = serde_json::from_reader(body.reader())?;
-            Ok("".to_string())
+            Ok(error.error.message)
         },
         _ => {
             eprintln!("Error res: {:?}", res);
-            Ok("".to_string())
+            let body = hyper::body::aggregate(res).await?;
+            let error: OpenAIErrorResponse = serde_json::from_reader(body.reader())?;
+            Ok(error.error.message)
         }
     }
 
