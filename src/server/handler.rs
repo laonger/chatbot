@@ -87,6 +87,7 @@ pub async fn handle_connection (
                 //// TODO return err
                 //stream.write_all("data error".as_bytes()).await?;
                 //("".to_string(), "".to_string())
+                println!("p1: {}", String::from_utf8(content_buf.clone())?);
                 ("1".to_string(), String::from_utf8(content_buf)?)
             }
     };
@@ -143,6 +144,8 @@ pub async fn handle_connection (
                     res = vec![
                         room_id, "--$$__".to_string(), res
                     ].join("");
+                } else {
+                    println!("a1: {}", res.clone());
                 }
                 res.push('\n');
                 stream.write_all(res.as_bytes()).await?;

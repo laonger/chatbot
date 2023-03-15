@@ -50,7 +50,6 @@ async fn main() -> openai::Result<()>{
     //let mut client_list = cache::Clients::new();
 
     loop {
-        println!("1111");
         //let mut tcpstream:TcpStream;
         //let mut address:String;
         
@@ -67,11 +66,9 @@ async fn main() -> openai::Result<()>{
         let mut client_list = client_list.clone();
 
         //drop(client_list);
-        println!("2222");
 
         tokio::spawn( async move {
             loop{
-                println!("7777");
                 match handler::handle_connection(&mut client_list, &mut tcpstream).await {
                     Ok(_) => {
                     },
