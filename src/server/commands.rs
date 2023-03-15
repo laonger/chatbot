@@ -2,6 +2,28 @@
 //   - new session
 //
 //
+use std::{
+    io::{prelude::*, BufReader},
+    //net::TcpStream,
+    sync::{
+        Arc,
+        //Mutex
+    },
+};
+
+use tokio::{
+    //time::sleep,
+    //io::{
+    //    self, 
+    //    AsyncReadExt,
+    //    AsyncWriteExt,
+    //},
+    sync::Mutex,
+    //net::{
+    //    TcpListener,
+    //    TcpStream,
+    //},
+};
 
 use std::{
     result::Result,
@@ -13,27 +35,33 @@ use crate::cache;
 
 
 fn execute(
-    client: &mut cache::ClientUnit, room_id: &String, cmd: &str
-) -> Result<(), Error> {
+    client: &mut cache::ClientUnit,
+    room_id: &String,
+    cmd: &str
+) -> Result<String, Error> {
     match cmd {
         "/new" => {
             client.clear_content(room_id);
+            return Ok("history cleared".to_string())
+        },
+        "/clients" => {
+            return Ok("".to_string())
         },
         _ => {
-            return Ok(());
+            return Err(Error);
         }
     }
-    Ok(())
 }
 
 pub fn run_command(
-    client: &mut cache::ClientUnit, room_id: &String, s: &String
-) -> bool{
+    client: &mut cache::ClientUnit,
+    room_id: &String,
+    s: &String
+) -> Result<String, Error>{
     let s = s.trim();
     if s.starts_with("/") {
-        execute(client, room_id, s);
-        true
+        return execute(client, room_id, s);
     } else {
-        false
+        Err(Error)
     }
 }

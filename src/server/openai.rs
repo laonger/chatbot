@@ -63,6 +63,11 @@ pub type Result<T>
 
 pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
+    // for local test
+    //if let cache::ContentUnit::user(m) = messages[messages.len()-1].clone() {
+    //    return Ok(m)
+    //}
+
     let https = HttpsConnector::new();
     let client = Client::builder().build(https);
     let uri = "https://api.openai.com/v1/chat/completions";
@@ -97,7 +102,7 @@ pub async fn get(messages: Vec<cache::ContentUnit>) -> Result<String> {
     //let body = Body::from(serde_json::to_vec(&openai_request)?);
     let body = Body::from(serde_json::to_string(&openai_request)?);
 
-    println!("openai request body: {body:?}");
+    //println!("openai request body: {body:?}");
 
     let req = Request::post(uri)
         .header(header::CONTENT_TYPE, "application/json")

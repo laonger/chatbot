@@ -40,7 +40,6 @@ pub async fn handle_connection (
     client_list: &mut Arc<Mutex<cache::Clients>>, 
     stream: &mut TcpStream
 ) -> openai::Result<()> {
-    println!("handler 3");
     
     let address = stream.peer_addr().unwrap().to_string();
 
@@ -74,7 +73,7 @@ pub async fn handle_connection (
     }
 
     //println!("content: {:?}", String::from_utf8(content_buf.clone()));
-    let (room_id, content) = match String::from_utf8(content_buf)?
+    let (room_id, content) = match String::from_utf8(content_buf.clone())?
         .replace("", "")
         .split_once("--$$__") {
             Some((x, y)) => {
@@ -84,13 +83,18 @@ pub async fn handle_connection (
                 )
             },
             None => {
-                println!("need room_id");
-                // TODO return err
-                ("".to_string(), "".to_string())
+                //println!("need room_id");
+                //// TODO return err
+                //stream.write_all("data error".as_bytes()).await?;
+                //("".to_string(), "".to_string())
+                ("1".to_string(), String::from_utf8(content_buf)?)
             }
     };
 
-    let mut is_command = false;
+    if content.replace("\n", "").is_empty() {
+        return Ok(())
+    }
+
     let mut messages: Vec<cache::ContentUnit> = Vec::new();
     {
         let mut client_list = client_list.lock().await;
@@ -103,13 +107,27 @@ pub async fn handle_connection (
                 client_list.get_client(address.clone()).unwrap()
             }
         };
-        is_command = commands::run_command(client, &room_id, &content);
-        if !is_command {
-            client.add_content(&room_id, cache::ContentUnit::user(content));
-            messages = client.migrate_content(&room_id);
+        match commands::run_command(client, &room_id, &content) {
+            Ok(m) => {
+                let mut res = m;
+                res.push('\n');
+                if room_id != "1".to_string(){
+                    res = vec![
+                        room_id, "--$$__".to_string(), res
+                    ].join("");
+                } else {
+                }
+                stream.write_all(res.as_bytes()).await?;
+                return Ok(())
+            },
+            Err(_) => {
+            }
+
         }
+        client.add_content(&room_id, cache::ContentUnit::user(content));
+        messages = client.migrate_content(&room_id);
     }
-    if !is_command {
+    {
         match openai::get(messages).await {
             Ok(mut res) => {
                 res.push('');
@@ -121,9 +139,12 @@ pub async fn handle_connection (
                 );
                 drop(client);
 
-                res = vec![
-                    room_id, "--$$__".to_string(), res
-                ].join("");
+                if room_id != "1".to_string(){
+                    res = vec![
+                        room_id, "--$$__".to_string(), res
+                    ].join("");
+                }
+                res.push('\n');
                 stream.write_all(res.as_bytes()).await?;
             },
             Err(e) => {
