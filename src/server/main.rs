@@ -1,31 +1,13 @@
 use std::{
-    //net::TcpListener,
     net::SocketAddr,
-    //thread::sleep,
-//    time,
     sync::{
         Arc,
-        //Mutex
     },
     ops::DerefMut,
+    env,
 };
 
-//use async_std::{
-//    task::sleep,
-//    net::{
-//        TcpListener,
-//        TcpStream,
-//    },
-//};
-
-//use futures::lock;
 use tokio::{
-//    time::sleep,
-//    io::{
-//        self, 
-//        AsyncReadExt,
-//        AsyncWriteExt,
-//    },
     sync::Mutex,
     net::{
         TcpListener,
@@ -42,18 +24,20 @@ mod openai;
 type ShareCLientList = Arc<Mutex<cache::Clients>>;
 
 #[tokio::main]
-//#[async_std::main]
 async fn main() -> openai::Result<()>{
-    let listener = TcpListener::bind("0.0.0.0:7878").await?;
+    let port = match env::var("PORT") {
+        Ok(x) => {
+            x
+        },
+        Err(_) => {
+            "7878".to_string()
+        }
+    };
+    let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
 
     let client_list:ShareCLientList = Arc::new(Mutex::new(cache::Clients::new()));
-    //let mut client_list = cache::Clients::new();
 
     loop {
-        //let mut tcpstream:TcpStream;
-        //let mut address:String;
-        
-        //let (mut tcpstream, address) = listener.accept().await.unwrap();
         let (mut tcpstream, address) = match listener.accept().await {
             Ok((tcpstream, address)) => {
                 (tcpstream, address)
@@ -62,10 +46,7 @@ async fn main() -> openai::Result<()>{
                 continue
             }
         };
-        //let address = address.to_string();
         let mut client_list = client_list.clone();
-
-        //drop(client_list);
 
         tokio::spawn( async move {
             loop{
@@ -79,6 +60,5 @@ async fn main() -> openai::Result<()>{
             };
         });
     };
-    //Ok(())
 }
 
