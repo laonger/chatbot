@@ -1,10 +1,19 @@
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::io::{stdin,stdout,Write, BufReader};
+use std::env;
 
 fn main() -> std::io::Result<()> {
     //let mut stream = TcpStream::connect("208.115.245.46:7878")?;
-    let mut stream = TcpStream::connect("127.0.0.1:7878")?;
+    let args: Vec<String> = env::args().collect();
+    let mut ip = "127.0.0.1";
+    let mut port = "7878";
+    if args.len() >1 {
+        ip = &args[1];
+        port = &args[2];
+    }
+
+    let mut stream = TcpStream::connect(format!("{ip}:{port}"))?;
 
     //stream.write(&[1])?;
     //stream.read(&mut [0; 128])?;
