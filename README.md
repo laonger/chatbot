@@ -1,5 +1,8 @@
 # chatbot
 
+chat with ChatGPT, surport 10 conversation contexts.
+
+
 run server:
 ```
 export PORT=10240 // default is 7878
