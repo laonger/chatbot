@@ -3,6 +3,7 @@
 run server:
 ```
 export PORT=10240 // default is 7878
+export OPENAI_API_KEY=xxxxxxx
 cargo run --bin server // you can also "cargo build" and run "target/release/server"
 ```
 
