@@ -31,7 +31,7 @@ impl ClientUnit {
                 c.push(content);
                 if c.len() >=10 {
                     for _ in 0..6 {
-                        c.remove(0);
+                        c.remove(1);
                     }
                 }
             },
@@ -50,7 +50,8 @@ impl ClientUnit {
             },
             None => {
                 let content = ContentUnit::system(
-                    "The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ".to_string());
+                    //"The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ".to_string());
+                    "下面是跟一个17岁傲娇软萌聪明活泼的女高中生的对话。".to_string());
                 self.add_content(room_id, content.clone());
                 vec![content]
             }
