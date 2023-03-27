@@ -21,3 +21,8 @@ also use nc:
 nc 127.0.0.1 10240
 ```
 and input what you want to ask.
+
+
+Deploy to Railway By One Click:
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/MrDA8-?referralCode=hpNd9_)
