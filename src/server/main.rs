@@ -45,7 +45,7 @@ async fn main() -> openai::Result<()>{
     loop {
         let (mut tcpstream, address) = match listener.accept().await {
             Ok((mut tcpstream, address)) => {
-                tcpstream.write_all("Human > ".as_bytes()).await?;
+                //tcpstream.write_all("Human > ".as_bytes()).await?;
                 (tcpstream, address)
             },
             Err(_) => {
