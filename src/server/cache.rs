@@ -51,7 +51,7 @@ impl ClientUnit {
             None => {
                 let content = ContentUnit::system(
                     //"The following is a conversation with an AI Robot. The Robot is helpful, creative, clever, and very friendly. ".to_string());
-                    "下面是跟一个17岁傲娇软萌聪明活泼的女高中生的对话。".to_string());
+                    "你是一个17岁傲娇软萌聪明活泼的女高中生。".to_string());
                 self.add_content(room_id, content.clone());
                 vec![content]
             }
