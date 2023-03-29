@@ -88,6 +88,7 @@ pub async fn handle_connection (
                 //stream.write_all("data error".as_bytes()).await?;
                 //("".to_string(), "".to_string())
                 println!("p1: {}", String::from_utf8(content_buf.clone())?);
+                // nc connections
                 ("1".to_string(), String::from_utf8(content_buf)?)
             }
     };
@@ -112,7 +113,7 @@ pub async fn handle_connection (
             Ok(m) => {
                 let mut res = m;
                 res.push('\n');
-                if room_id != "1".to_string(){
+                if room_id != "1".to_string() && room_id != "2".to_string(){
                     res = vec![
                         room_id, "--$$__".to_string(), res
                     ].join("");
@@ -120,6 +121,7 @@ pub async fn handle_connection (
                     res = format!("AI > {res}\nHuman > ");
                 }
                 stream.write_all(res.as_bytes()).await?;
+                stream.flush().await?;
                 return Ok(())
             },
             Err(_) => {
@@ -141,7 +143,7 @@ pub async fn handle_connection (
                 );
                 drop(client);
 
-                if room_id != "1".to_string(){
+                if room_id != "1".to_string() && room_id != "2".to_string(){
                     res = vec![
                         room_id, "--$$__".to_string(), res
                     ].join("");
