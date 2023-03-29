@@ -117,6 +117,7 @@ pub async fn handle_connection (
                         room_id, "--$$__".to_string(), res
                     ].join("");
                 } else {
+                    res = format!("AI > {res}\nHuman > ");
                 }
                 stream.write_all(res.as_bytes()).await?;
                 return Ok(())
@@ -144,11 +145,13 @@ pub async fn handle_connection (
                     res = vec![
                         room_id, "--$$__".to_string(), res
                     ].join("");
+                    res.push('\n');
                 } else {
+                    res = format!("AI > {res}\nHuman > ");
                     println!("a1: {}", res.clone());
                 }
-                res.push('\n');
                 stream.write_all(res.as_bytes()).await?;
+                stream.flush().await?;
             },
             Err(e) => {
                 println!("{:?}", e);

@@ -9,6 +9,11 @@ use std::{
 
 use tokio::{
     sync::Mutex,
+    io::{
+        self, 
+        AsyncReadExt,
+        AsyncWriteExt,
+    },
     net::{
         TcpListener,
         TcpStream,
@@ -39,7 +44,8 @@ async fn main() -> openai::Result<()>{
 
     loop {
         let (mut tcpstream, address) = match listener.accept().await {
-            Ok((tcpstream, address)) => {
+            Ok((mut tcpstream, address)) => {
+                tcpstream.write_all("Human > ".as_bytes()).await?;
                 (tcpstream, address)
             },
             Err(_) => {
