@@ -19,7 +19,7 @@ fn main() -> std::io::Result<()> {
     //stream.read(&mut [0; 128])?;
     loop {
         let mut user_input = "2--$$__".to_string();
-        println!("Human: ");
+        print!("Human: ");
         stdin().read_line(&mut user_input).expect("");
         //println!("{user_input}");
         user_input.push('');

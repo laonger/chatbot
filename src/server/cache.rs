@@ -61,6 +61,11 @@ impl ClientUnit {
     pub fn clear_content(&mut self, room_id:&String) {
         self.contents.remove(room_id);
     }
+
+    pub fn rooms(&mut self) -> Vec<&String>{
+        return self.contents.keys().collect();
+        
+    }
 }
 
 #[derive(Debug)]

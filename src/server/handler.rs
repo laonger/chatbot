@@ -100,7 +100,7 @@ pub async fn handle_connection (
     let mut messages: Vec<cache::ContentUnit> = Vec::new();
     {
         let mut client_list = client_list.lock().await;
-        let client = match client_list.get_client(address.clone()) {
+        let client = match (&mut client_list).get_client(address.clone()) {
             Some(c) => {
                 c
             },
