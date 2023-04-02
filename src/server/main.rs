@@ -6,6 +6,10 @@ use std::{
     ops::DerefMut,
     env,
 };
+use log::{
+    info,
+    debug,
+};
 
 use tokio::{
     sync::Mutex,
@@ -45,6 +49,7 @@ async fn main() -> openai::Result<()>{
     loop {
         let (mut tcpstream, address) = match listener.accept().await {
             Ok((mut tcpstream, address)) => {
+                info!("Connection in...");
                 //tcpstream.write_all("Human > ".as_bytes()).await?;
                 (tcpstream, address)
             },
