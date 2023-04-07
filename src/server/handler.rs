@@ -134,7 +134,6 @@ pub async fn handle_connection (
     {
         match openai::get(messages).await {
             Ok(mut res) => {
-                res.push('');
 
                 let mut client_list = client_list.lock().await;
                 let client = client_list.get_client(address.clone()).unwrap();
@@ -152,6 +151,7 @@ pub async fn handle_connection (
                     res = format!("AI > {res}\nHuman > ");
                     println!("a1: {}", res.clone());
                 }
+                res.push('');
                 stream.write_all(res.as_bytes()).await?;
                 stream.flush().await?;
             },
