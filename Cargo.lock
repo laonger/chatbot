@@ -39,6 +39,7 @@ dependencies = [
  "http",
  "hyper",
  "hyper-tls",
+ "log",
  "serde",
  "serde_derive",
  "serde_json",
