@@ -1,4 +1,4 @@
-FROM rust
+FROM rust:alpine
 workdir /app
 
 expose 7878
