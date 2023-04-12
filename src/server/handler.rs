@@ -47,7 +47,7 @@ pub async fn handle_connection (
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
     
-    loop {
+    loop { // 反复读取，直到没有新的数据为止
         match stream.read(&mut temp_buf).await {
             Ok(0) => {
                 return Err(Box::new(
@@ -72,7 +72,6 @@ pub async fn handle_connection (
         }
     }
 
-    //println!("content: {:?}", String::from_utf8(content_buf.clone()));
     let (room_id, content) = match String::from_utf8(content_buf.clone())?
         .replace("", "")
         .split_once("--$$__") {
@@ -83,12 +82,8 @@ pub async fn handle_connection (
                 )
             },
             None => {
-                //println!("need room_id");
-                //// TODO return err
-                //stream.write_all("data error".as_bytes()).await?;
-                //("".to_string(), "".to_string())
-                println!("p1: {}", String::from_utf8(content_buf.clone())?);
                 // nc connections
+                println!("p1: {}", String::from_utf8(content_buf.clone())?);
                 ("1".to_string(), String::from_utf8(content_buf)?)
             }
     };
@@ -96,6 +91,8 @@ pub async fn handle_connection (
     if content.replace("\n", "").is_empty() {
         return Ok(())
     }
+
+    println!("room_id old: {}", room_id);
 
     let mut messages: Vec<cache::ContentUnit> = Vec::new();
     {
@@ -142,6 +139,7 @@ pub async fn handle_connection (
                 );
                 drop(client);
 
+                println!("room_id new: {}", room_id);
                 if room_id != "1".to_string() && room_id != "2".to_string(){
                     res = vec![
                         room_id, "--$$__".to_string(), res
