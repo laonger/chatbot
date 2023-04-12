@@ -96,7 +96,9 @@ pub async fn handle_connection (
 
     let mut messages: Vec<cache::ContentUnit> = Vec::new();
     {
+        println!("lock: 1");
         let mut client_list = client_list.lock().await;
+        println!("lock: 2");
         let client = match (&mut client_list).get_client(address.clone()) {
             Some(c) => {
                 c
@@ -106,6 +108,7 @@ pub async fn handle_connection (
                 client_list.get_client(address.clone()).unwrap()
             }
         };
+        println!("lock: 3");
         match commands::run_command(client, &room_id, &content) {
             Ok(m) => {
                 let mut res = m;
@@ -125,19 +128,26 @@ pub async fn handle_connection (
             }
 
         }
+        println!("lock: 4");
         client.add_content(&room_id, cache::ContentUnit::user(content));
         messages = client.migrate_content(&room_id);
+        println!("lock: 4");
     }
     {
         match openai::get(messages).await {
             Ok(mut res) => {
 
+                println!("lock: 5");
                 let mut client_list = client_list.lock().await;
+                println!("lock: 6");
                 let client = client_list.get_client(address.clone()).unwrap();
+                println!("lock: 7");
                 client.add_content(&room_id, 
                     cache::ContentUnit::assistant(res.clone())
                 );
+                println!("lock: 8");
                 drop(client);
+                println!("lock: 9");
 
                 println!("room_id new: {}", room_id);
                 if room_id != "1".to_string() && room_id != "2".to_string(){
