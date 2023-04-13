@@ -165,6 +165,7 @@ pub async fn handle_connection (
                 res.push('');
                 stream.write_all(res.as_bytes()).await?;
                 stream.flush().await?;
+                println!("lock: 10");
             },
             Err(e) => {
                 println!("{:?}", e);
