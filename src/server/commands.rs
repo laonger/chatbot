@@ -50,9 +50,11 @@ pub fn run_command(
                 },
                 "/rooms" => {
                     let mut r = String::new();
+                    println!("lock: 3.11");
                     for i in client.rooms() {
                         r.push_str(format!("{i}, ").as_str());
                     }
+                    println!("lock: 3.12");
                     if r.is_empty(){
                         r = "no rooms".to_string();
                     }

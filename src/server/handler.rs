@@ -111,6 +111,7 @@ pub async fn handle_connection (
         println!("lock: 3");
         match commands::run_command(client, &room_id, &content) {
             Ok(m) => {
+                println!("lock: 3.1");
                 let mut res = m;
                 res.push('\n');
                 if room_id != "1".to_string() && room_id != "2".to_string(){
@@ -120,8 +121,10 @@ pub async fn handle_connection (
                 } else {
                     res = format!("AI > {res}\nHuman > ");
                 }
+                println!("lock: 3.2");
                 stream.write_all(res.as_bytes()).await?;
                 stream.flush().await?;
+                println!("lock: 3.3");
                 return Ok(())
             },
             Err(_) => {
