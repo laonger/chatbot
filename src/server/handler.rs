@@ -122,6 +122,7 @@ pub async fn handle_connection (
                     res = format!("AI > {res}\nHuman > ");
                 }
                 println!("lock: 3.2");
+                println!("command answer: {}", res);
                 stream.write_all(res.as_bytes()).await?;
                 stream.flush().await?;
                 println!("lock: 3.3");
