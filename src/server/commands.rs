@@ -4,6 +4,7 @@
 //
 use std::{
     io::{prelude::*, BufReader},
+    str::FromStr,
     //net::TcpStream,
     sync::{
         Arc,
@@ -31,10 +32,13 @@ use std::{
     fmt::Error,
 };
 
-use crate::cache;
+use crate::{
+    cache,
+    openai,
+};
 
 
-pub fn run_command(
+pub async fn run_command(
     client: &mut cache::ClientUnit,
     //client_list: &mut Arc<Mutex<cache::Clients>>,
     room_id: &String,
@@ -77,6 +81,52 @@ pub fn run_command(
                 };
             }
             r.push('\n');
+            return Ok(r)
+        },
+        Some(("/image", args_str)) => {
+            let args:Vec<&str> = args_str.splitn(3, " ").collect();
+            let (n, size, prompt) = match args.len() {
+                1 => {
+                    (1, "512x512".to_string(), args[0].to_string())
+                },
+                2 => {
+                    let arg_0 = args[0];
+                    match arg_0 {
+                        "1024x1024" | "512x512" | "256x256" => {
+                            (1, arg_0.to_string(), args[1].to_string())
+                        },
+                        _ => {
+                            match i32::from_str(arg_0) {
+                                Ok(n) => {
+                                    (n, "512x512".to_string(), args[1].to_string())
+                                },
+                                Err(_) => {
+                                    (1, "512x512".to_string(), args_str.to_string())
+                                }
+                            }
+                        }
+                    }
+                },
+                3 => {
+                    let mut n = i32::from_str(args[0]).unwrap();
+                    if n >= 4 {
+                        n = 4
+                    }
+                    let size = args[1].to_string();
+                    (n, size, args[2].to_string())
+                }
+                _ => {
+                    (1, "512x512".to_string(), args_str.to_string())
+                }
+            };
+            let r = match openai::draw(prompt, n, size).await {
+                Ok(r) => {
+                    r
+                },
+                _ => {
+                    "".to_string()
+                }
+            };
             return Ok(r)
         },
         _ => {

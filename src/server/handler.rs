@@ -109,7 +109,7 @@ pub async fn handle_connection (
             }
         };
         println!("lock: 3");
-        match commands::run_command(client, &room_id, &content) {
+        match commands::run_command(client, &room_id, &content).await {
             Ok(m) => {
                 println!("lock: 3.1");
                 let mut res = m;
@@ -138,7 +138,7 @@ pub async fn handle_connection (
         println!("lock: 4");
     }
     {
-        match openai::get(messages).await {
+        match openai::ask(messages).await {
             Ok(mut res) => {
 
                 println!("lock: 5");
