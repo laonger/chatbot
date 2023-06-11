@@ -164,8 +164,8 @@ pub async fn handle_connection (
                     println!("a1: {}", res.clone());
                 }
                 res.push('');
-                stream.write_all(res.as_bytes()).await?;
-                stream.flush().await?;
+                stream.write_all(res.as_bytes()).await.unwrap();
+                stream.flush().await.unwrap();
                 println!("lock: 10");
             },
             Err(e) => {
@@ -174,6 +174,7 @@ pub async fn handle_connection (
             }
         }
     }
+    println!("lock: 11");
 
     Ok(())
 }

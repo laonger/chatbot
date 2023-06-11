@@ -1,9 +1,5 @@
 use std::{
-    net::SocketAddr,
-    sync::{
-        Arc,
-    },
-    ops::DerefMut,
+    sync::Arc,
     env,
 };
 use log::{
@@ -20,7 +16,6 @@ use tokio::{
     },
     net::{
         TcpListener,
-        TcpStream,
     },
 };
 
@@ -47,6 +42,8 @@ async fn main() -> openai::Result<()>{
     let client_list:ShareCLientList = Arc::new(Mutex::new(cache::Clients::new()));
 
     loop {
+        println!("1");
+        // 拿到连接
         let (mut tcpstream, address) = match listener.accept().await {
             Ok((mut tcpstream, address)) => {
                 info!("Connection in...");
@@ -61,6 +58,7 @@ async fn main() -> openai::Result<()>{
 
         tokio::spawn( async move {
             loop{
+                println!("2");
                 match handler::handle_connection(&mut client_list, &mut tcpstream).await {
                     Ok(_) => {
                     },
@@ -68,6 +66,7 @@ async fn main() -> openai::Result<()>{
                         break
                     }
                 };
+                println!("3");
             };
         });
     };
