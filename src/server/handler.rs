@@ -23,10 +23,7 @@ use tokio::{
         AsyncWriteExt,
     },
     sync::Mutex,
-    net::{
-        TcpListener,
-        TcpStream,
-    },
+    net::TcpStream,
 };
 
 use crate::{

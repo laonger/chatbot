@@ -63,6 +63,7 @@ async fn main() -> openai::Result<()>{
                     Ok(_) => {
                     },
                     Err(e) => {
+                        eprintln!("{:?}", e);
                         break
                     }
                 };
