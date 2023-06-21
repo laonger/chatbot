@@ -33,23 +33,17 @@ use crate::{
 };
 
 
-pub async fn handle_connection (
-    client_list: &mut Arc<Mutex<cache::Clients>>, 
-    stream: &mut TcpStream
-) -> openai::Result<()> {
-    
-    let address = stream.peer_addr().unwrap().to_string();
+pub async fn pull_out_content(stream: &mut TcpStream) 
+    -> Result<(String, String), String> {
 
     let buf_size = 8;
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
-    
+
     loop { // 反复读取，直到没有新的数据为止
         match stream.read(&mut temp_buf).await {
             Ok(0) => {
-                return Err(Box::new(
-                        io::Error::from(io::ErrorKind::ConnectionAborted)
-                        ));
+                return Err(io::ErrorKind::ConnectionAborted.to_string());
             },
             Ok(r) => {
                 content_buf.extend_from_slice(&temp_buf[..r]);
@@ -64,12 +58,13 @@ pub async fn handle_connection (
             },
             Err(e) => {
                 println!("eeeee, {:?}", e);
-                return Err(e.into());
+                return Err(e.to_string());
             }
         }
     }
 
-    let (room_id, content) = match String::from_utf8(content_buf.clone())?
+    let (room_id, content) = match String::from_utf8(content_buf.clone())
+        .unwrap()
         .replace("", "")
         .split_once("--$$__") {
             Some((x, y)) => {
@@ -80,14 +75,36 @@ pub async fn handle_connection (
             },
             None => {
                 // nc connections
-                println!("p1: {}", String::from_utf8(content_buf.clone())?);
-                ("1".to_string(), String::from_utf8(content_buf)?)
+                println!(
+                    "p1: {}", 
+                    String::from_utf8(content_buf.clone()).unwrap()
+                    );
+                ("1".to_string(), String::from_utf8(content_buf).unwrap())
             }
     };
 
     if content.replace("\n", "").is_empty() {
-        return Ok(())
+        return Err("no content".to_string())
     }
+    return Ok((room_id, content))
+    
+}
+
+pub async fn handle_connection (
+    client_list: &mut Arc<Mutex<cache::Clients>>, 
+    stream: &mut TcpStream
+) -> openai::Result<()> {
+    
+    let address = stream.peer_addr().unwrap().to_string();
+    
+    let (room_id, content)  = match pull_out_content(stream).await {
+        Ok((r, c)) => {
+            (r, c)
+        },
+        Err(_) => {
+            ("".to_string(), "".to_string())
+        }
+    };
 
     println!("room_id old: {}", room_id);
 
@@ -106,33 +123,29 @@ pub async fn handle_connection (
             }
         };
         println!("lock: 3");
-        match commands::run_command(client, &room_id, &content).await {
-            Ok(m) => {
-                println!("lock: 3.1");
-                let mut res = m;
-                res.push('\n');
-                if room_id != "1".to_string() && room_id != "2".to_string(){
-                    res = vec![
-                        room_id, "--$$__".to_string(), res
-                    ].join("");
-                } else {
-                    res = format!("AI > {res}\nHuman > ");
-                }
-                println!("lock: 3.2");
-                println!("command answer: {}", res);
-                stream.write_all(res.as_bytes()).await?;
-                stream.flush().await?;
-                println!("lock: 3.3");
-                return Ok(())
-            },
-            Err(_) => {
+        if let Ok(m) = commands::run_command(client, &room_id, &content).await {
+            println!("lock: 3.1");
+            let mut res = m;
+            res.push('\n');
+            if room_id != "1".to_string() && room_id != "2".to_string(){
+                res = vec![
+                    room_id, "--$$__".to_string(), res
+                ].join("");
+            } else {
+                res = format!("AI > {res}\nHuman > ");
             }
-
+            println!("lock: 3.2");
+            println!("command answer: {}", res);
+            stream.write_all(res.as_bytes()).await?;
+            stream.flush().await?;
+            println!("lock: 3.3");
+            return Ok(())
         }
         println!("lock: 4");
         client.add_content(&room_id, cache::ContentUnit::user(content));
         messages = client.migrate_content(&room_id);
         println!("lock: 4");
+        drop(client);
     }
     {
         match openai::ask(messages).await {

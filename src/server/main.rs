@@ -1,5 +1,6 @@
 use std::{
     sync::Arc,
+    //sync::Mutex,
     env,
 };
 use log::{
@@ -18,6 +19,7 @@ use tokio::{
         TcpListener,
     },
 };
+
 
 
 mod handler;
@@ -39,7 +41,8 @@ async fn main() -> openai::Result<()>{
     };
     let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
 
-    let client_list:ShareCLientList = Arc::new(Mutex::new(cache::Clients::new()));
+
+    let client_list = Arc::new(Mutex::new(cache::Clients::new()));
 
     loop {
         println!("1");
@@ -56,7 +59,7 @@ async fn main() -> openai::Result<()>{
         };
         let mut client_list = client_list.clone();
 
-        tokio::spawn( async move {
+        tokio::spawn(async move {
             loop{
                 println!("2");
                 match handler::handle_connection(&mut client_list, &mut tcpstream).await {
