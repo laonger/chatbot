@@ -167,6 +167,7 @@ pub async fn handle_connection (
             }
             println!("lock: 3.2");
             println!("command answer: {}", res);
+            res.push("");
             stream.write_all(res.as_bytes()).await?;
             stream.flush().await?;
             println!("lock: 3.3");
