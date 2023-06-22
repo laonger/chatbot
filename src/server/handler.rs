@@ -95,7 +95,17 @@ pub async fn handle_connection (
     stream: &mut TcpStream
 ) -> openai::Result<()> {
     
-    let address = stream.peer_addr().unwrap().to_string();
+    println!("h1");
+    
+    let address = match stream.peer_addr(){
+        Ok(addr) => {
+            addr.to_string()
+        },
+        Err(e) => {
+            return Err(openai::OError::from(e))
+        }
+    };
+    println!("h2");
     
     let (room_id, content)  = match pull_out_content(stream).await {
         Ok((r, c)) => {
@@ -105,6 +115,7 @@ pub async fn handle_connection (
             ("".to_string(), "".to_string())
         }
     };
+    println!("h3");
 
     println!("room_id old: {}", room_id);
 
