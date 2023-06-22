@@ -65,9 +65,15 @@ async fn main() -> openai::Result<()>{
                 match handler::handle_connection(&mut client_list, &mut tcpstream).await {
                     Ok(_) => {
                     },
-                    Err(e) => {
-                        eprintln!("{:?}", e);
-                        break
+                    Err(e) => match e.description() {
+                        "connection aborted" => {
+                            eprintln!("{:?}", e);
+                            break
+                        },
+                        _ => {
+                            eprintln!("{:?}", e);
+                            break
+                        }
                     }
                 };
                 println!("3");

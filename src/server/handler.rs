@@ -1,5 +1,6 @@
 use std::{
     io::{prelude::*, BufReader},
+    error::Error as STDError,
     //net::TcpStream,
     sync::{
         Arc,
@@ -34,7 +35,7 @@ use crate::{
 
 
 pub async fn pull_out_content(stream: &mut TcpStream) 
-    -> Result<(String, String), String> {
+    -> openai::Result<(String, String)> {
 
     let buf_size = 8;
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
@@ -43,7 +44,9 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     loop { // 反复读取，直到没有新的数据为止
         match stream.read(&mut temp_buf).await {
             Ok(0) => {
-                return Err(io::ErrorKind::ConnectionAborted.to_string());
+                return Err(
+                    io::Error::from(io::ErrorKind::ConnectionAborted).into()
+                );
             },
             Ok(r) => {
                 content_buf.extend_from_slice(&temp_buf[..r]);
@@ -58,7 +61,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             },
             Err(e) => {
                 println!("eeeee, {:?}", e);
-                return Err(e.to_string());
+                return Err(e.into());
             }
         }
     }
@@ -84,7 +87,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     };
 
     if content.replace("\n", "").is_empty() {
-        return Err("no content".to_string())
+        return Err("no content".into())
     }
     return Ok((room_id, content))
     
@@ -102,7 +105,7 @@ pub async fn handle_connection (
             addr.to_string()
         },
         Err(e) => {
-            return Err(openai::OError::from(e))
+            return Err(e.into())
         }
     };
     println!("h2");
@@ -111,8 +114,25 @@ pub async fn handle_connection (
         Ok((r, c)) => {
             (r, c)
         },
-        Err(_) => {
-            ("".to_string(), "".to_string())
+        Err(e) => match e.description() {
+            "connection aborted" => {
+                println!("h2.1");
+                let mut client_list = client_list.lock().await;
+                client_list.remove_client(address);
+                return Err(e)
+            },
+            "no content" => {
+                eprintln!("{:?}", e);
+                return Ok(())
+            },
+            _ => {
+                eprintln!("{:?}", e);
+                println!("h2.3");
+                let mut client_list = client_list.lock().await;
+                client_list.remove_client(address);
+                return Err(e)
+                //("".to_string(), "".to_string())
+            }
         }
     };
     println!("h3");
