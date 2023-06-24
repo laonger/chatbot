@@ -65,11 +65,8 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             }
         }
     }
-
-    let (room_id, content) = match String::from_utf8(content_buf.clone())
-        .unwrap()
-        .replace("", "")
-        .split_once("--$$__") {
+    let (room_id, content) = match String::from_utf8(content_buf.clone()) {
+        Ok(r) => match r.replace("", "") .split_once("--$$__") {
             Some((x, y)) => {
                 (
                     x.to_string(),
@@ -84,6 +81,11 @@ pub async fn pull_out_content(stream: &mut TcpStream)
                     );
                 ("1".to_string(), String::from_utf8(content_buf).unwrap())
             }
+        },
+        Err(e) => {
+            return Err(e.into())
+        }
+
     };
 
     if content.replace("\n", "").is_empty() {
@@ -206,8 +208,8 @@ pub async fn handle_connection (
                     println!("a1: {}", res.clone());
                 }
                 res.push('');
-                stream.write_all(res.as_bytes()).await.unwrap();
-                stream.flush().await.unwrap();
+                stream.write_all(res.as_bytes()).await;
+                stream.flush().await;
                 println!("lock: 10");
             },
             Err(e) => {
