@@ -37,7 +37,7 @@ use crate::{
 pub async fn pull_out_content(stream: &mut TcpStream) 
     -> openai::Result<(String, String)> {
 
-    let buf_size = 8;
+    let buf_size = 15;
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
 
