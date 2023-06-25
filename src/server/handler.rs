@@ -51,12 +51,16 @@ pub async fn pull_out_content(stream: &mut TcpStream)
                 );
             },
             Ok(r) => {
-                println!("p1.2");
+                println!("p1.2.1");
                 content_buf.extend_from_slice(&temp_buf[..r]);
+                println!("p1.2.2");
                 temp_buf = vec![0; buf_size];
+                println!("p1.2.3");
                 if r != buf_size {
+                    println!("p1.2.4");
                     break
                 }
+                println!("p1.2.5");
                 continue
             },
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
