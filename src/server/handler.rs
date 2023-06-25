@@ -41,14 +41,17 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
 
+    println!("p1");
     loop { // 反复读取，直到没有新的数据为止
         match stream.read(&mut temp_buf).await {
             Ok(0) => {
+                println!("p1.1");
                 return Err(
                     io::Error::from(io::ErrorKind::ConnectionAborted).into()
                 );
             },
             Ok(r) => {
+                println!("p1.2");
                 content_buf.extend_from_slice(&temp_buf[..r]);
                 temp_buf = vec![0; buf_size];
                 if r != buf_size {
@@ -57,6 +60,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
                 continue
             },
             Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                println!("p1.3");
                 continue;
             },
             Err(e) => {
@@ -65,9 +69,11 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             }
         }
     }
+    println!("p2");
     let (room_id, content) = match String::from_utf8(content_buf.clone()) {
         Ok(r) => match r.replace("", "") .split_once("--$$__") {
             Some((x, y)) => {
+                println!("p2.1");
                 (
                     x.to_string(),
                     y.to_string()
@@ -76,13 +82,14 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             None => {
                 // nc connections
                 println!(
-                    "p1: {}", 
+                    "p2.2: {}", 
                     String::from_utf8(content_buf.clone()).unwrap()
                     );
                 ("1".to_string(), String::from_utf8(content_buf).unwrap())
             }
         },
         Err(e) => {
+            println!("p2.3, {:?}", e);
             return Err(e.into())
         }
 
