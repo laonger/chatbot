@@ -41,14 +41,19 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
 
+    let mut n = 0;
+
+    println!("p1");
     loop { // 反复读取，直到没有新的数据为止
-        match stream.read(&mut temp_buf).await {
+        stream.readable().await.unwrap();
+        match stream.try_read_buf(&mut temp_buf) {
             Ok(0) => {
                 return Err(
                     io::Error::from(io::ErrorKind::ConnectionAborted).into()
                 );
             },
             Ok(r) => {
+                n += r;
                 content_buf.extend_from_slice(&temp_buf[..r]);
                 temp_buf = vec![0; buf_size];
                 if r != buf_size {
@@ -65,6 +70,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             }
         }
     }
+    println!("p2");
     let (room_id, content) = match String::from_utf8(content_buf.clone()) {
         Ok(r) => match r.replace("", "") .split_once("--$$__") {
             Some((x, y)) => {
@@ -89,6 +95,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
 
     };
 
+    println!("p3");
     if content.replace("\n", "").is_empty() {
         return Err("no content".into())
     }
@@ -209,6 +216,7 @@ pub async fn handle_connection (
                     println!("a1: {}", res.clone());
                 }
                 res.push('');
+                stream.writable().await.unwrap();
                 stream.write_all(res.as_bytes()).await;
                 stream.flush().await;
                 println!("lock: 10");
