@@ -41,8 +41,6 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
 
-    let mut n = 0;
-
     println!("p1");
     loop { // 反复读取，直到没有新的数据为止
         stream.readable().await.unwrap();
@@ -53,8 +51,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
                 );
             },
             Ok(r) => {
-                n += r;
-                content_buf.extend_from_slice(&temp_buf[..r]);
+                content_buf.extend_from_slice(&temp_buf[(buf_size-r)..]);
                 temp_buf = vec![0; buf_size];
                 if r != buf_size {
                     break
