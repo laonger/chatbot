@@ -70,7 +70,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             }
         }
     }
-    println!("p2");
+    println!("p2, {:?}", content_buf);
     let (room_id, content) = match String::from_utf8(content_buf.clone()) {
         Ok(r) => match r.replace("", "") .split_once("--$$__") {
             Some((x, y)) => {
@@ -95,7 +95,7 @@ pub async fn pull_out_content(stream: &mut TcpStream)
 
     };
 
-    println!("p3");
+    println!("p3, {}, {}", room_id, content);
     if content.replace("\n", "").is_empty() {
         return Err("no content".into())
     }
