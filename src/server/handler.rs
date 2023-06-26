@@ -44,14 +44,14 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     println!("p1");
     loop { // 反复读取，直到没有新的数据为止
         stream.readable().await.unwrap();
-        match stream.try_read_buf(&mut temp_buf) {
+        match stream.try_read(&mut temp_buf) {
             Ok(0) => {
                 return Err(
                     io::Error::from(io::ErrorKind::ConnectionAborted).into()
                 );
             },
             Ok(r) => {
-                content_buf.extend_from_slice(&temp_buf[(buf_size-r)..]);
+                content_buf.extend_from_slice(&temp_buf[..r]);
                 temp_buf = vec![0; buf_size];
                 if r != buf_size {
                     break
