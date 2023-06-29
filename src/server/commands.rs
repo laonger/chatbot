@@ -34,8 +34,10 @@ use std::{
 
 use crate::{
     cache,
-    openai,
 };
+
+use simple_openai::ContentType;
+use simple_openai as openai;
 
 
 pub async fn run_command(
@@ -71,7 +73,7 @@ pub async fn run_command(
             let mut r = String::new();
             for c in client.migrate_content(&room_id.to_string()) {
                 match c {
-                    cache::ContentUnit::user(x) => {
+                    ContentType::user(x) => {
                         r.push_str(x.as_str())
                     },
                     _ => {
@@ -97,8 +99,7 @@ pub async fn run_command(
                             match i32::from_str(arg_0) {
                                 Ok(n) => {
                                     (n, "512x512".to_string(), args[1].to_string())
-                                },
-                                Err(_) => {
+                                }, Err(_) => {
                                     (1, "512x512".to_string(), args_str.to_string())
                                 }
                             }

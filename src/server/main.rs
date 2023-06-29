@@ -25,7 +25,7 @@ use tokio::{
 mod handler;
 mod commands;
 mod cache;
-mod openai;
+use simple_openai as openai;
 
 type ShareCLientList = Arc<Mutex<cache::Clients>>;
 
