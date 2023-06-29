@@ -41,7 +41,6 @@ pub async fn pull_out_content(stream: &mut TcpStream)
     let mut temp_buf:Vec<u8> = vec![0; buf_size];
     let mut content_buf = vec![];
 
-    println!("p1");
     loop { // 反复读取，直到没有新的数据为止
         stream.readable().await.unwrap();
         match stream.try_read(&mut temp_buf) {
@@ -67,7 +66,6 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             }
         }
     }
-    println!("p2, {:?}", content_buf);
     let (room_id, content) = match String::from_utf8(content_buf.clone()) {
         Ok(r) => match r.replace("", "") .split_once("--$$__") {
             Some((x, y)) => {
@@ -78,21 +76,18 @@ pub async fn pull_out_content(stream: &mut TcpStream)
             },
             None => {
                 // nc connections
-                println!(
-                    "p2.2: {}", 
+                println!("nc: {}", 
                     String::from_utf8(content_buf.clone()).unwrap()
                     );
                 ("1".to_string(), String::from_utf8(content_buf).unwrap())
             }
         },
         Err(e) => {
-            println!("p2.3, {:?}", e);
             return Err(e.into())
         }
 
     };
 
-    println!("p3, {}, {}", room_id, content);
     if content.replace("\n", "").is_empty() {
         return Err("no content".into())
     }
@@ -115,7 +110,6 @@ pub async fn handle_connection (
             return Err(e.into())
         }
     };
-    println!("h2");
     
     let (room_id, content)  = match pull_out_content(stream).await {
         Ok((r, c)) => {
@@ -123,7 +117,6 @@ pub async fn handle_connection (
         },
         Err(e) => match e.description() {
             "connection aborted" => {
-                println!("h2.1");
                 let mut client_list = client_list.lock().await;
                 client_list.remove_client(address);
                 return Err(e)
@@ -134,7 +127,6 @@ pub async fn handle_connection (
             },
             _ => {
                 eprintln!("{:?}", e);
-                println!("h2.3");
                 let mut client_list = client_list.lock().await;
                 client_list.remove_client(address);
                 return Err(e)
@@ -142,15 +134,12 @@ pub async fn handle_connection (
             }
         }
     };
-    println!("h3");
 
     println!("room_id old: {}", room_id);
 
     let mut messages: Vec<cache::ContentUnit> = Vec::new();
     {
-        println!("lock: 1");
         let mut client_list = client_list.lock().await;
-        println!("lock: 2");
         let client = match (&mut client_list).get_client(address.clone()) {
             Some(c) => {
                 c
@@ -160,9 +149,7 @@ pub async fn handle_connection (
                 client_list.get_client(address.clone()).unwrap()
             }
         };
-        println!("lock: 3");
         if let Ok(m) = commands::run_command(client, &room_id, &content).await {
-            println!("lock: 3.1");
             let mut res = m;
             res.push('\n');
             if room_id != "1".to_string() && room_id != "2".to_string(){
@@ -172,12 +159,10 @@ pub async fn handle_connection (
             } else {
                 res = format!("AI > {res}\nHuman > ");
             }
-            println!("lock: 3.2");
             println!("command answer: {}", res);
             res.push('');
             stream.write_all(res.as_bytes()).await?;
             stream.flush().await?;
-            println!("lock: 3.3");
             return Ok(())
         }
         println!("lock: 4");
@@ -190,17 +175,12 @@ pub async fn handle_connection (
         match openai::ask(messages).await {
             Ok(mut res) => {
 
-                println!("lock: 5");
                 let mut client_list = client_list.lock().await;
-                println!("lock: 6");
                 let client = client_list.get_client(address.clone()).unwrap();
-                println!("lock: 7");
                 client.add_content(&room_id, 
                     cache::ContentUnit::assistant(res.clone())
                 );
-                println!("lock: 8");
                 drop(client);
-                println!("lock: 9");
 
                 println!("room_id new: {}", room_id);
                 if room_id != "1".to_string() && room_id != "2".to_string(){
@@ -216,7 +196,6 @@ pub async fn handle_connection (
                 stream.writable().await.unwrap();
                 stream.write_all(res.as_bytes()).await;
                 stream.flush().await;
-                println!("lock: 10");
             },
             Err(e) => {
                 println!("{:?}", e);

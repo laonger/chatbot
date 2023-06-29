@@ -67,6 +67,19 @@ pub type Result<T>
 
 pub async fn ask(messages: Vec<cache::ContentUnit>) -> Result<String> {
 
+    //let mut re:Vec<String> = Vec::new();
+    //for i in messages.clone() {
+    //    match i {
+    //        cache::ContentUnit::user(s) => {
+    //            re.push(s)
+    //        },
+    //        _ => {
+    //        }
+    //    }
+    //};
+    //return Ok(re.join(""));
+
+
     let https = HttpsConnector::new();
     let client = Client::builder().build(https);
     let uri = "https://api.openai.com/v1/chat/completions";
