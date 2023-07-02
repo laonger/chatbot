@@ -36,7 +36,7 @@ use crate::{
     cache,
 };
 
-use simple_openai::ContentType;
+use simple_openai::RoleType;
 use simple_openai as openai;
 
 
@@ -73,7 +73,7 @@ pub async fn run_command(
             let mut r = String::new();
             for c in client.migrate_content(&room_id.to_string()) {
                 match c {
-                    ContentType::user(x) => {
+                    RoleType::user(x) => {
                         r.push_str(x.as_str())
                     },
                     _ => {

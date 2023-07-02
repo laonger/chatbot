@@ -27,7 +27,7 @@ use tokio::{
     net::TcpStream,
 };
 
-use simple_openai::ContentType;
+use simple_openai::RoleType;
 use simple_openai as openai;
 
 use crate::{
@@ -139,7 +139,7 @@ pub async fn handle_connection (
 
     println!("room_id old: {}", room_id);
 
-    let mut messages: Vec<openai::ContentType> = Vec::new();
+    let mut messages: Vec<openai::RoleType> = Vec::new();
     {
         let mut client_list = client_list.lock().await;
         let client = match (&mut client_list).get_client(address.clone()) {
@@ -167,7 +167,7 @@ pub async fn handle_connection (
             stream.flush().await?;
             return Ok(())
         }
-        client.add_content(&room_id, openai::ContentType::user(content));
+        client.add_content(&room_id, openai::RoleType::user(content));
         messages = client.migrate_content(&room_id);
         drop(client);
     }
@@ -178,7 +178,7 @@ pub async fn handle_connection (
                 let mut client_list = client_list.lock().await;
                 let client = client_list.get_client(address.clone()).unwrap();
                 client.add_content(&room_id, 
-                    openai::ContentType::assistant(res.clone())
+                    openai::RoleType::assistant(res.clone())
                 );
                 drop(client);
 

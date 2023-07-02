@@ -655,7 +655,7 @@ dependencies = [
 [[package]]
 name = "simple_openai"
 version = "0.1.0"
-source = "git+https://github.com/laonger/simple_openai.git#2771b93b904c48d683e6ade8bdda781b375a132d"
+source = "git+https://github.com/laonger/simple_openai.git#68b0184a2df63a42516a71213c4b8b220a0204ad"
 dependencies = [
  "http",
  "hyper",
